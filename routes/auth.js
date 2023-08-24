@@ -1,3 +1,5 @@
+// don't forget to change variables in code and in .env file for your project
+
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
@@ -12,10 +14,6 @@ let transporter = nodemailer.createTransport({
         user: process.env.EMAIL_USERNAME,
         pass: process.env.EMAIL_PASSWORD
     }
-});
-
-router.get('/', (req, res) => {
-    res.send('Hello World');
 });
 
 router.get('/hello', (req, res) => {
@@ -56,46 +54,6 @@ router.post('/register', async (req, res) => {
     }
 });
 
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const FacebookStrategy = require('passport-facebook').Strategy;
-
-passport.use(new GoogleStrategy({
-    clientID: 'YOUR_GOOGLE_CLIENT_ID',
-    clientSecret: 'YOUR_GOOGLE_CLIENT_SECRET',
-    callbackURL: '/auth/google/callback'
-}, async (accessToken, refreshToken, profile, done) => {
-    // Handle user data here, either save or find in the database
-    // const user = await User.findOrCreate({ googleId: profile.id }, { ... });  // This is pseudo-code, actual implementation may vary
-    done(null, user);
-}));
-
-passport.use(new FacebookStrategy({
-    clientID: 'YOUR_FACEBOOK_APP_ID',
-    clientSecret: 'YOUR_FACEBOOK_APP_SECRET',
-    callbackURL: '/auth/facebook/callback'
-}, async (accessToken, refreshToken, profile, done) => {
-    // Handle user data here, similar to Google
-    // const user = await User.findOrCreate({ facebookId: profile.id }, { ... });  // This is pseudo-code, actual implementation may vary
-    done(null, user);
-}));
-
-router.get('/auth/google', passport.authenticate('google', {
-    scope: ['profile', 'email']
-}));
-
-router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/' }), (req, res) => {
-    // Here, you can generate a JWT for the user and send it to the client or redirect to another route.
-    const token = jwt.sign({ _id: req.user._id }, process.env.JWT_SECRET);
-    res.header('auth-token', token).send({ token });
-});
-
-router.get('/auth/facebook', passport.authenticate('facebook'));
-
-router.get('/auth/facebook/callback', passport.authenticate('facebook', { failureRedirect: '/' }), (req, res) => {
-    const token = jwt.sign({ _id: req.user._id }, process.env.JWT_SECRET);
-    res.header('auth-token', token).send({ token });
-});
-
 router.post('/reset-password', async (req, res) => {
     // ... Find user by email ...
     // Generate a reset token
@@ -114,7 +72,6 @@ router.post('/reset-password', async (req, res) => {
         else res.send('Email sent: ' + info.response);
     });
 });
-
 
 router.post('/confirm-reset', async (req, res) => {
     try {
@@ -143,7 +100,47 @@ router.get('/authorize/:role', async (req, res) => {
 
 
 
+// TODO: OAuth
 
-// ... (other routes)
+
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const FacebookStrategy = require('passport-facebook').Strategy;
+
+passport.use(new GoogleStrategy({
+    clientID: 'YOUR_GOOGLE_CLIENT_ID',
+    clientSecret: 'YOUR_GOOGLE_CLIENT_SECRET',
+    callbackURL: '/auth/google/callback'
+}, async (accessToken, refreshToken, profile, done) => {
+    // TODO: Handle user data here, either save or find in the database
+    // const user = await User.findOrCreate({ googleId: profile.id }, { ... });  // TODO: This is pseudo-code, actual implementation may vary
+    done(null, user);
+}));
+
+passport.use(new FacebookStrategy({
+    clientID: 'YOUR_FACEBOOK_APP_ID',
+    clientSecret: 'YOUR_FACEBOOK_APP_SECRET',
+    callbackURL: '/auth/facebook/callback'
+}, async (accessToken, refreshToken, profile, done) => {
+    // TODO: Handle user data here, either save or find in the database
+    // const user = await User.findOrCreate({ facebookId: profile.id }, { ... });  // TODO: This is pseudo-code, actual implementation may vary
+    done(null, user);
+}));
+
+router.get('/auth/google', passport.authenticate('google', {
+    scope: ['profile', 'email']
+}));
+
+router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/' }), (req, res) => {
+    // Here, you can generate a JWT for the user and send it to the client or redirect to another route.
+    const token = jwt.sign({ _id: req.user._id }, process.env.JWT_SECRET);
+    res.header('auth-token', token).send({ token });
+});
+
+router.get('/auth/facebook', passport.authenticate('facebook'));
+
+router.get('/auth/facebook/callback', passport.authenticate('facebook', { failureRedirect: '/' }), (req, res) => {
+    const token = jwt.sign({ _id: req.user._id }, process.env.JWT_SECRET);
+    res.header('auth-token', token).send({ token });
+});
 
 module.exports = router;
